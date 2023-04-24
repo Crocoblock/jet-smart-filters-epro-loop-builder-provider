@@ -72,6 +72,14 @@ class JSF_EPro_Loop_Grid_Provider extends Jet_Smart_Filters_Provider_Base {
 
 		$query_id = ! empty( $settings['_element_id'] ) ? $settings['_element_id'] : 'default';
 
+		$current_document = \Elementor\Plugin::$instance->documents->get_current();
+
+		if ( ! $current_document ) {
+			$post_id = get_the_ID();
+		} else {
+			$post_id = $current_document->get_main_id();
+		}
+
 		/**
 		 * We'll parse required block settings from page content.
 		 * In this case such approach used because we need inner content anyway.
@@ -81,7 +89,7 @@ class JSF_EPro_Loop_Grid_Provider extends Jet_Smart_Filters_Provider_Base {
 		 */
 		$attrs = array(
 			'widget_id'        => $widget->get_id(),
-			'filtered_post_id' => get_the_ID(),
+			'filtered_post_id' => $post_id,
 		);
 
 		jet_smart_filters()->providers->add_provider_settings( $this->get_id(), $attrs, $query_id );
