@@ -31,6 +31,11 @@ class JSF_EPro_Loop_Grid_Provider extends Jet_Smart_Filters_Provider_Base {
 			 */
 			add_filter( 'elementor/widget/before_render_content', array( $this, 'store_defaults' ), 0, 3 );
 
+			/**
+			 * Store default widget query for indexer compatibility
+			 */
+			add_action( 'elementor/query/query_results', array( $this, 'store_default_query' ), 10, 2 );
+
 		}
 
 	}
@@ -53,13 +58,10 @@ class JSF_EPro_Loop_Grid_Provider extends Jet_Smart_Filters_Provider_Base {
 		);
 	}
 
-	/**
-	 * Store default block attributes to add them to filters AJAX request
-	 */
-	public function store_defaults( $widget ) {
+	public function is_filterable_widget( $widget ) {
 
 		if ( $this->widget_name !== $widget->get_name() ) {
-			return;
+			return false;
 		}
 
 		$settings      = $widget->get_settings_for_display();
@@ -67,11 +69,23 @@ class JSF_EPro_Loop_Grid_Provider extends Jet_Smart_Filters_Provider_Base {
 		$is_filterable = filter_var( $is_filterable, FILTER_VALIDATE_BOOLEAN );
 
 		if ( ! $is_filterable ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Store default block attributes to add them to filters AJAX request
+	 */
+	public function store_defaults( $widget ) {
+
+		if ( ! $this->is_filterable_widget( $widget ) ) {
 			return;
 		}
 
-		$query_id = ! empty( $settings['_element_id'] ) ? $settings['_element_id'] : 'default';
-
+		$settings         = $widget->get_settings_for_display();
+		$query_id         = ! empty( $settings['_element_id'] ) ? $settings['_element_id'] : 'default';
 		$current_document = \Elementor\Plugin::$instance->documents->get_current();
 
 		if ( ! $current_document ) {
@@ -93,6 +107,35 @@ class JSF_EPro_Loop_Grid_Provider extends Jet_Smart_Filters_Provider_Base {
 		);
 
 		jet_smart_filters()->providers->add_provider_settings( $this->get_id(), $attrs, $query_id );
+
+	}
+
+	/**
+	 * Save default query
+	 */
+	public function store_default_query( $wp_query, $widget ) {
+
+		if ( ! $this->is_filterable_widget( $widget ) ) {
+			return;
+		}
+
+		$settings = $widget->get_settings_for_display();
+
+		if ( ! empty( $settings['_element_id'] ) ) {
+			$query_id = $settings['_element_id'];
+		} else {
+			$query_id = 'default';
+		}
+
+		$wp_query->set( 'jet_smart_filters', $this->get_id() . '/' . $query_id );
+
+		jet_smart_filters()->query->store_provider_default_query( $this->get_id(), array(
+			'post_type'      => $wp_query->get( 'post_type' ),
+			'paged'          => $wp_query->get( 'paged' ),
+			'posts_per_page' => $wp_query->get( 'posts_per_page' ),
+			'tax_query'      => $wp_query->get( 'tax_query' ),
+			'category_name'  => $wp_query->get( 'category_name' ),
+		), $query_id );
 
 	}
 
