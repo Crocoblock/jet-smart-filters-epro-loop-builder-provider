@@ -3,7 +3,7 @@
  * Plugin Name: JetSmartFilters - Elementor Pro Loop Grid provider
  * Plugin URI:  #
  * Description: Beta version of Elementor Pro Loop Grid provider for JetSmartFilters
- * Version:     1.0.0-beta2
+ * Version:     1.0.0-beta3
  * Author:      Crocoblock
  * Author URI:  https://crocoblock.com/
  * License:     GPL-3.0+
@@ -32,5 +32,39 @@ add_action( 'jet-smart-filters/providers/register', function( $providers_manager
 		);
 
 	}
+
+} );
+
+add_filter( 'jet-smart-filters/filters/localized-data', function( $data ) {
+
+	wp_add_inline_script( 'jet-smart-filters', '
+
+		window.JetSmartFilters.events.subscribe( "ajaxFilters/updated", ( provider, queryId ) => {
+
+			if ( "epro-loop-builder" !== provider ) {
+				return;
+			}
+
+			let filterGroup = window.JetSmartFilters.filterGroups[ provider + "/" + queryId ];
+
+			if ( ! filterGroup || ! filterGroup.$provider ) {
+				return;
+			}
+
+			let $widget = filterGroup.$provider.closest( ".elementor-widget-loop-grid" );
+
+			if ( $widget.length ) {
+				window.elementorFrontend.hooks.doAction(
+					"frontend/element_ready/" + $widget.data( "widget_type" ),
+					$widget, 
+					jQuery
+				);
+			}
+
+		} );
+
+	' );
+
+	return $data;
 
 } );
