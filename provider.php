@@ -137,6 +137,16 @@ class JSF_EPro_Loop_Grid_Provider extends Jet_Smart_Filters_Provider_Base {
 			'category_name'  => $wp_query->get( 'category_name' ),
 		), $query_id );
 
+		jet_smart_filters()->query->set_props(
+			$this->get_id(),
+			array(
+				'found_posts'   => $wp_query->found_posts,
+				'max_num_pages' => $wp_query->max_num_pages,
+				'page'          => $wp_query->page,
+			),
+			$query_id
+		);
+
 	}
 
 	/**
