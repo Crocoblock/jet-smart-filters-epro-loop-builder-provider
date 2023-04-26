@@ -129,13 +129,7 @@ class JSF_EPro_Loop_Grid_Provider extends Jet_Smart_Filters_Provider_Base {
 
 		$wp_query->set( 'jet_smart_filters', $this->get_id() . '/' . $query_id );
 
-		jet_smart_filters()->query->store_provider_default_query( $this->get_id(), array(
-			'post_type'      => $wp_query->get( 'post_type' ),
-			'paged'          => $wp_query->get( 'paged' ),
-			'posts_per_page' => $wp_query->get( 'posts_per_page' ),
-			'tax_query'      => $wp_query->get( 'tax_query' ),
-			'category_name'  => $wp_query->get( 'category_name' ),
-		), $query_id );
+		jet_smart_filters()->query->store_provider_default_query( $this->get_id(), $wp_query->query, $query_id );
 
 		jet_smart_filters()->query->set_props(
 			$this->get_id(),
