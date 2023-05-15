@@ -210,6 +210,10 @@ class JSF_EPro_Loop_Grid_Provider extends Jet_Smart_Filters_Provider_Base {
 		if ( $widget ) {
 
 			add_filter( 'elementor/query/query_args', array( $this, 'add_query_args' ), 10, 2 );
+
+			// render content
+			ob_start();
+
 			$skin = $widget->get_current_skin();
 			
 			if ( $skin ) {
@@ -219,6 +223,13 @@ class JSF_EPro_Loop_Grid_Provider extends Jet_Smart_Filters_Provider_Base {
 				$widget->render_by_mode();
 			}
 
+			$content = ob_get_clean();
+
+			if ( $content ) {
+				echo $content;
+			} else {
+				echo '<div class="elementor-loop-container"></div>';
+			}
 		} else {
 			echo 'Widget not found';
 		}
